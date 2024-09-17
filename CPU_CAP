@@ -1,0 +1,33 @@
+"DONT RUN IN PRODUCTION SERVER"
+
+Declare @cpucap int = '100'  -- the default value , change the cap limit to 50 or 60 or 70
+--declare @cpucap int = '50'
+declare @exec bit = 0 -- change to 1 to execute
+declare @SQL Nvarchar(max) 
+Print '-- Printing a statement'
+Set @SQL = '
+-- Set a CPU cap of 30% on the default resource pool
+ALTER RESOURCE POOL "default"
+WITH (CAP_CPU_PERCENT = ' + convert(nvarchar, @cpucap) + ');
+-- Apply the changes
+ALTER RESOURCE GOVERNOR RECONFIGURE;'
+
+Print @SQL --RG_CPU_CAP
+if @exec = 1
+begin
+exec sp_executesql  @SQL 
+end 
+
+else
+Print '
+Statement Printed, not executed'
+
+Declare @name nvarchar(50) declare @cap int
+SELECT
+    @name = name,
+    --max_cpu_percent,
+   @cap = cap_cpu_percent
+FROM sys.dm_resource_governor_resource_pools where name = 'default'
+
+Print 'The current setting shows the default resource group CPU is capped at ' + convert(varchar, @cap) + '.'
+
